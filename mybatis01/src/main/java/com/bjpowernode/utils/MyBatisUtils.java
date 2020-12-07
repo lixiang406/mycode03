@@ -1,0 +1,49 @@
+package com.bjpowernode.utils;
+
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+
+import javax.imageio.IIOException;
+import java.io.IOException;
+import java.io.InputStream;
+
+public class MyBatisUtils {
+    private static String resource="mybatis-config.xml";
+    private static SqlSessionFactory sqlSessionFactory;
+    //将连接对象SqlSession和当前线程进行绑定
+    private static  final ThreadLocal<SqlSession> TL=new ThreadLocal<>();
+    static {
+        try{
+            InputStream inputStream= Resources.getResourceAsStream(resource);
+            sqlSessionFactory =new SqlSessionFactoryBuilder().build(inputStream);
+        }catch (IOException e){
+        e.printStackTrace();
+        }
+    }
+
+//链接的工厂对象
+public static SqlSession openSession(){
+    //从线程对象中获取链接
+    SqlSession sqlSession=TL.get();
+    if(sqlSession==null){
+        //说明当前线程时第一次调用该方法
+        sqlSession=sqlSessionFactory.openSession();
+//将连接对象和当前线程绑定
+        TL.set(sqlSession);
+    }
+    return sqlSession;
+}
+
+public static void commit(){
+    openSession().commit();
+}
+//释放资源
+    public static void release(){
+    //不是真正的关闭,而是将链接返还给连接池
+        openSession().close();
+        TL.remove();
+    }
+}
+
