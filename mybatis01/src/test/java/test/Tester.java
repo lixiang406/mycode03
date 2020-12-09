@@ -141,4 +141,8 @@ public class Tester {
         System.out.println(goods);
         System.out.println(goods.getCategory());
     }
+    @Test
+    public void test11(){
+        System.out.println("hello word");
+    }
 }
